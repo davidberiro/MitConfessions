@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { FlatList, Text, StyleSheet, View } from 'react-native';
+import { FlatList, Text, StyleSheet, View, TouchableHighlight } from 'react-native';
 import ReadMore from 'react-native-read-more-text';
 import { List, ListItem } from 'react-native-elements';
 // import { View } from '@shoutem/ui';
@@ -9,6 +9,22 @@ const NUM_OF_POSTS = 15;
 
 class FlatListPosts extends Component {
   
+  constructor(props) {
+  super(props);
+
+  this.onPress = this.onPress.bind(this);
+  }
+  
+  onPress = (item) => {
+    var newData = this.state.data;
+    var index = newData.findIndex((obj) => obj.id == item.id);
+    newData[index].comments.summary.can_comment = 'true';
+    this.setState({data: newData})
+    console.log('pressed the item');
+    console.log(item.message);
+    console.log(item.comments.summary.can_comment);
+  }
+  
   state = {
     data: [],
     numOfPosts: 0,
@@ -16,7 +32,47 @@ class FlatListPosts extends Component {
     lastLoaded: "ZZZ"
   };
   
-  renderItem = (item) => {
+  renderComments = (item) => {
+    return (
+      <View style={styles.post}>
+        <Text style={styles.postText}>
+          {item.message}
+        </Text>
+      </View>
+    )
+  }
+  
+  renderPost = (item) => {
+    
+    if (item.comments.summary.can_comment === 'true' && item.comments.data != null) {
+      return (
+        <View style={styles.post}>
+          <ReadMore
+            numberOfLines={5}>
+            <Text style={styles.postText}>
+              {item.message}
+            </Text>
+          </ReadMore>
+        <View style={styles.lowerDiv}>
+          <Text style={styles.likeText}>
+            {item.likes.summary.total_count} likes
+          </Text>
+          <Text style={styles.commentStyle}>
+            {item.comments.summary.total_count} comments
+          </Text>
+        </View>
+        <FlatList
+          data={Object.values(item.comments.data)}
+          renderItem={({item}) => this.renderComments(item)}
+          keyExtractor={(item, index) => index}
+          onEndReached={() => console.log("end comments reached")}
+          onEndReachedThreshold={0}
+          >
+            
+        </FlatList>
+      </View>
+      )
+    }
     return (
       <View style={styles.post}>
         {/* <View style={styles.post}> */}
@@ -32,6 +88,11 @@ class FlatListPosts extends Component {
           <Text style={styles.likeText}>
             {item.likes.summary.total_count} likes
           </Text>
+          <TouchableHighlight onPress={() => this.onPress(item)}>
+            <Text>
+              load comments
+            </Text>
+          </TouchableHighlight>
           <Text style={styles.commentStyle}>
             {item.comments.summary.total_count} comments
           </Text>
@@ -86,11 +147,12 @@ class FlatListPosts extends Component {
     return (
         <FlatList
           data = {this.state.data}
-          renderItem = {({item}) => this.renderItem(item)}
+          renderItem = {({item}) => this.renderPost(item)}
           keyExtractor={(item, index) => index}
           // ItemSeparatorComponent={this.renderSeparator}
           onEndReached={this.loadMorePosts}
           onEndReachedThreshold={0}
+          extraData={this.state}
         />
     )
   }
@@ -127,15 +189,16 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.1)',
     borderWidth: 1,
     backgroundColor: '#fff',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   likeText: {
     fontSize: 12,
-    // textAlign: 'left',
+    paddingLeft: 7,
   },
   commentStyle: {
     fontSize: 12,
-    // alignSelf: 'flex-end',
-    // textAlign: 'right',
+    paddingRight: 7,
   }
 });
 
