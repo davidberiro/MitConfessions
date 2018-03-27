@@ -16,13 +16,14 @@ class FlatListPosts extends Component {
   }
   
   onPress = (item) => {
+    var showComments = !item.comments.summary.can_comment;
     var newData = this.state.data;
     var index = newData.findIndex((obj) => obj.id == item.id);
-    newData[index].comments.summary.can_comment = 'true';
+    newData[index].comments.summary.can_comment = showComments;
     this.setState({data: newData})
-    console.log('pressed the item');
-    console.log(item.message);
-    console.log(item.comments.summary.can_comment);
+    // console.log('pressed the item');
+    // console.log(item.message);
+    // console.log(item.comments.summary.can_comment);
   }
   
   state = {
@@ -35,8 +36,14 @@ class FlatListPosts extends Component {
   renderComments = (item) => {
     return (
       <View style={styles.post}>
-        <Text style={styles.postText}>
-          {item.message}
+        <ReadMore
+          numberOfLines={5}>
+          <Text style={styles.postText}>
+            {item.message}
+          </Text>
+        </ReadMore>
+        <Text style={{fontSize: 10}}>
+          {item.likes.summary.total_count} likes
         </Text>
       </View>
     )
@@ -44,7 +51,7 @@ class FlatListPosts extends Component {
   
   renderPost = (item) => {
     
-    if (item.comments.summary.can_comment === 'true' && item.comments.data != null) {
+    if (item.comments.summary.can_comment && item.comments.data != null) {
       return (
         <View style={styles.post}>
           <ReadMore
@@ -57,6 +64,11 @@ class FlatListPosts extends Component {
           <Text style={styles.likeText}>
             {item.likes.summary.total_count} likes
           </Text>
+          <TouchableHighlight onPress={() => this.onPress(item)}>
+            <Text>
+              hide comments
+            </Text>
+          </TouchableHighlight>
           <Text style={styles.commentStyle}>
             {item.comments.summary.total_count} comments
           </Text>
