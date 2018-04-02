@@ -101,7 +101,7 @@ class FlatListPosts extends Component {
             {item.likes.summary.total_count} likes
           </Text>
           <TouchableHighlight onPress={() => this.onPress(item)}>
-            <Text>
+            <Text style={styles.postText}>
               load comments
             </Text>
           </TouchableHighlight>
